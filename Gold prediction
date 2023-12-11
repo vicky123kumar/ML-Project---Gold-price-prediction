@@ -1,0 +1,78 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn import metrics
+
+# loading dataset
+gold_dataset = pd.read_csv("gld_price_data.csv")
+
+# display dataset
+gold_dataset.head()
+
+# shape
+gold_dataset.shape
+
+# information extraction
+gold_dataset.info()
+
+# checking missing values
+gold_dataset.isnull().sum()
+
+# statistical measures of dataset
+gold_dataset.describe()
+
+# Data Correlation
+correlation = gold_dataset.corr()
+# construct heatmap to visualise correlation
+plt.figure(figsize = (5,5))
+sns.heatmap(correlation, cbar = True, square = True, fmt = ".1f", annot = True, annot_kws = {"size": 8}, cmap = sns.cubehelix_palette(as_cmap=True))
+
+# correlation values
+print(correlation["GLD"])
+
+# distribution of gold price
+sns.distplot(gold_dataset["GLD"], color = "blue")
+
+# distribution of gold price
+sns.displot(gold_dataset["GLD"], kde=True)
+
+# separating features and target
+X = gold_dataset.drop(["GLD", "Date"], axis = 1)
+Y = gold_dataset["GLD"]
+
+# train test split
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2, random_state = 2)
+
+print("Total data: ", X.shape)
+print("Train data: ", X_train.shape)
+print("Test data: ", X_test.shape)
+
+#Model training using Random Forest Regressor
+regressor = RandomForestRegressor()
+# training the model
+regressor.fit(X_train, Y_train)
+
+# prediciton on train data
+train_data_prediciton = regressor.predict(X_train)
+# R squared error
+train_error_score = metrics.r2_score(train_data_prediciton, Y_train)
+print("R squared error: ", train_error_score)
+
+# prediciton on test data
+test_data_prediciton = regressor.predict(X_test)
+# R squared error
+test_error_score = metrics.r2_score(test_data_prediciton, Y_test)
+print("R squared error: ", test_error_score)
+
+Y_test = list(Y_test)
+
+plt.plot(Y_test, color = "blue", label = "Actual Value")
+plt.plot(test_data_prediciton, color = "green", label = "Predicted Value")
+plt.title("Actual Price vs Predicted Price")
+plt.xlabel("Number of values")
+plt.ylabel("GLD price")
+plt.legend()
+plt.show()
